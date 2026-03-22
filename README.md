@@ -91,7 +91,20 @@ To configure your tweaks, you need a way to show the configuration UI. There's t
 ```
 
  - You can present a `FBTweakViewController` from anywhere in your app. Be sure to restrict the activation UI to debug builds!
- 
+
+ ```objective-c
+ - (void)showTweaks {
+    FBTweakViewController *tweakVC = [[FBTweakViewController alloc] initWithStore:[FBTweakStore sharedInstance]];
+    tweakVC.tweaksDelegate = self;
+    // Assuming this is in the app delegate
+    [self.window.rootViewController presentViewController:tweakVC animated:YES completion:nil];
+}
+
+- (void)tweakViewControllerPressedDone:(FBTweakViewController *)tweakViewController {
+    [tweakViewController dismissViewControllerAnimated:YES completion:NULL];
+}
+```
+
 #### Tweaks UI Dismiss Notification
 
 Alternatively, when the Tweaks UI is dismissed, you can register your notification center to listen to `FBTweakShakeViewControllerDidDismissNotification`, which can be used after importing `FBTweakViewController.h` 
@@ -107,8 +120,10 @@ tweak.name = @"Advanced Settings";
 tweak.defaultValue = @NO;
 
 FBTweakStore *store = [FBTweakStore sharedInstance];
-FBTweakCategory *category = [store tweakCategoryWithName:@"Settings"];
-FBTweakCollection *collection = [category tweakCollectionWithName:@"Enable"];
+FBTweakCategory *category = [[FBTweakCategory alloc] initWithName:@"Settings"];
+[store addTweakCategory:category];
+FBTweakCollection *collection = [[FBTweakCollection alloc] initWithName:@"Enable"];
+[category addTweakCollection:collection];
 [collection addTweak:tweak];
 
 [tweak addObserver:self];
@@ -135,6 +150,8 @@ Also you have de ability to implement the optional method `tweakWillChange:` in 
 To override when tweaks are enabled, you can define the `FB_TWEAK_ENABLED` macro. It's suggested to avoid including them when submitting to the App Store.
 
 ### Using from a Swift Project
+
+*Khan Academy's project [SwiftTweaks](http://engineering.khanacademy.org/posts/introducing-swifttweaks.htm) is designed for Swift, and might be a better choice for Swift projects.*
 
 Tweaks can be used from Swift projects. In this case the handy shortcut macros defined in `FBTweakInline.h` are not available, meaning tweaks need to be created programmatically, similar to this example:
 
@@ -172,7 +189,7 @@ In release builds, the macros just expand to the default value. Nothing extra is
 ## Installation
 There are two options:
 
- 1. Tweaks is available as `Tweaks` in [Cocoapods](http://cocoapods.org). (If you have issues with custom Xcode configurations, [this comment](https://github.com/facebook/Tweaks/issues/4#issuecomment-40629741) might help.)
+ 1. Tweaks is available as `Tweaks` in [CocoaPods](http://cocoapods.org). (If you have issues with custom Xcode configurations, [this comment](https://github.com/facebook/Tweaks/issues/4#issuecomment-40629741) might help.)
  2. Manually add the files from `FBTweak/` into your Xcode project. Slightly simpler, but updates are also manual.
 
 Tweaks requires iOS 6 or later.
